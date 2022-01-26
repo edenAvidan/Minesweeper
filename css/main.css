@@ -1,0 +1,8 @@
+.hidden {
+    background-color: gray;
+}
+
+.game-container table td{
+    height: 50px;
+    width: 50px;
+}

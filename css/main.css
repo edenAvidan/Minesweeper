@@ -1,5 +1,9 @@
-.hidden {
+.hidden-td {
     background-color: gray;
+}
+
+.hidden {
+    display: none;
 }
 
 .game-container table td{

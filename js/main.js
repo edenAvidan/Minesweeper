@@ -7,9 +7,14 @@ const EMPTY = ' ';
 const LEFT_CLICK = 0;
 const RIGHT_CLICK = 2;
 
+const NUM_OF_LIVES = 3;
+
 var gBoard;
 var gLevel;
 var gGame;
+
+var gTimerInterval;
+var gElTime;
 
 function initGame() {
 
@@ -22,12 +27,18 @@ function initGame() {
     gGame = {
         isOn: false,
         isFirstClick: true,
+        lives: NUM_OF_LIVES,
         shownCount: 0,
         markedCount: 0,
         secsPassed: 0
     };
 
-    document.querySelector('.game-over').classList.add('hidden'); // hides game over message on new game
+    // resets for new game
+    document.querySelector('.game-over').classList.add('hidden'); // will not be needed when smily is added
+    document.querySelector('.lives span').innerHTML = NUM_OF_LIVES;
+    clearInterval(gTimerInterval);
+    gElTime = document.querySelector('.timer span')
+    gElTime.innerHTML = 0;
 
     buildBoard();
     renderBoard(gBoard, '.game-container', 'hidden-td', 1);
@@ -81,6 +92,7 @@ function cellClicked(mouseEvent, elCell, i, j) {
                 handleRightClick(elCell, cell);
                 break;
         }
+        if (checkGameOver()) gameOver();
     }
 }
 
@@ -91,63 +103,8 @@ function handleLeftClick(elCell, i, j) {
     if (!cell.isMine) {
         openCell(i, j, elCell);
         if (cell.minesAroundCount === 0) expandShown(i, j);
-        if (checkGameOver()) gameOver(true);
     } else {
-        openMine(elCell);
-    }
-}
-
-function handleRightClick(elCell, cell) {
-    cell.isMarked = !cell.isMarked;
-    gGame.markedCount += cell.isMarked ? 1 : -1;
-    elCell.classList.toggle("marked");
-    renderCell(elCell, cell.isMarked ? MARK : EMPTY)
-
-    if (checkGameOver()) gameOver(true);
-}
-
-// i,j for the first click on the game
-function startGame(i, j) {
-    gGame.isOn = true;
-    gGame.isFirstClick = false;
-    // start timer here
-    placeMines(gLevel.MINES, i, j);
-    setMinesNegsCount();
-
-}
-
-function renderCell(elCell, value) {
-    // Select the elCell and set the value
-    elCell.innerHTML = `<span>${value}</span`;
-}
-
-function openMine(elMine) {
-    renderCell(elMine, MINE);
-    elMine.style.backgroundColor = 'red';
-    revelAllMines();
-    gameOver(false);
-}
-
-function gameOver(playerWin) {
-    var elWinBox = document.querySelector('.game-over');
-    var elWinMsg = elWinBox.querySelector('h1 span');
-
-    if (playerWin) elWinMsg.innerHTML = 'Win';
-    else elWinMsg.innerHTML = 'Lose';
-
-    elWinBox.classList.remove('hidden');
-    gGame.isOn = false;
-}
-
-function checkGameOver() { // check if there's a need to manually mark cells if player reveled all empty cells but did not mark mines
-    return gGame.shownCount + gLevel.MINES === gLevel.SIZE ** 2 && gGame.markedCount === gLevel.MINES;
-}
-
-function revelAllMines() {
-    var elMines = document.querySelectorAll('.mines');
-    for (var i = 0; i < elMines.length; i++) {
-        elMines[i].classList.remove('hidden-td');
-        renderCell(elMines[i], MINE);
+        openMine(i, j, elCell);
     }
 }
 
@@ -159,12 +116,73 @@ function openCell(i, j, elCell = undefined) {
     cell.isShown = true;
     gGame.shownCount++;
 
-    var minesCount = cell.minesAroundCount;
-    if (minesCount === 0) {
-        minesCount = EMPTY;
-    }
+    var minesCount = cell.minesAroundCount ? cell.minesAroundCount : EMPTY;
 
     renderCell(elCell, minesCount);
+}
+
+function openMine(i, j, elMine) { // problem with last item being a mine and the last life
+    renderCell(elMine, MINE);
+    elMine.style.backgroundColor = 'red';
+    elMine.classList.remove('hidden-td');
+    gBoard[i][j].isShown = true;
+    gGame.shownCount++;
+    updateLives();
+}
+
+function handleRightClick(elCell, cell) {
+    cell.isMarked = !cell.isMarked;
+    gGame.markedCount += cell.isMarked ? 1 : -1;
+    elCell.classList.toggle('marked');
+    renderCell(elCell, cell.isMarked ? MARK : EMPTY)
+}
+
+// i,j for the first click on the game
+function startGame(i, j) {
+    gGame.isOn = true;
+    gGame.isFirstClick = false;
+
+    updateTimer();
+    gTimerInterval = setInterval(updateTimer, 1000);
+
+    placeMines(gLevel.MINES, i, j);
+    setMinesNegsCount();
+}
+
+function renderCell(elCell, value) {
+    // Select the elCell and set the value
+    elCell.innerHTML = `<span>${value}</span>`; // span not needed currently
+}
+
+function gameOver() {
+    var elWinBox = document.querySelector('.game-over');
+    var elWinMsg = elWinBox.querySelector('h1 span');
+
+    if (gGame.lives > 0) elWinMsg.innerHTML = 'Win';
+    else elWinMsg.innerHTML = 'Lose';
+
+    elWinBox.classList.remove('hidden');
+    //All the above should be deleted if simley exists
+
+    if (gGame.lives <= 0) {
+        revelAllMines();
+    }
+    gGame.isOn = false;
+    clearInterval(gTimerInterval);
+}
+
+function checkGameOver() {
+    var livesUsed = NUM_OF_LIVES - gGame.lives;
+    var playerWinningCondition = gGame.shownCount + (gLevel.MINES - livesUsed) === gLevel.SIZE ** 2 && (gGame.markedCount + livesUsed) === gLevel.MINES;
+    return gGame.lives <= 0 || playerWinningCondition;
+}
+
+function revelAllMines() {
+    var elMines = document.querySelectorAll('.mines');
+    for (var i = 0; i < elMines.length; i++) {
+        elMines[i].classList.remove('hidden-td');
+        renderCell(elMines[i], MINE);
+    }
 }
 
 function expandShown(cellRowidx, cellCollIdx) {
@@ -208,6 +226,19 @@ function countNeighborMines(cellRowidx, cellCollIdx) {
     return count;
 }
 
+function updateLives() {
+    gGame.lives--;
+    var elLives = document.querySelector('.lives span');
+    renderCell(elLives, gGame.lives);
+
+    return gGame.lives;
+}
+
+function updateTimer() {
+    gGame.secsPassed++;
+    renderCell(gElTime, gGame.secsPassed);
+}
+
 function getBoardSize() {
     var difficultyBtns = document.getElementsByName('difficulty');
     for (var i = 0; i < difficultyBtns.length; i++) {
@@ -225,3 +256,4 @@ function getNumOfMines(boardSize) {
         default: return parseInt((boardSize ** 2) * .2);
     }
 }
+

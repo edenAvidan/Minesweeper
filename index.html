@@ -10,6 +10,10 @@
 </head>
 
 <body onload="initGame()">
+    <div class="timer">Time: <span>0</span>s</div>
+    <span class="lives">Lives remaining <span>3</span></span>
+    <div class="game-container"></div>
+
     <div class="size-btns">
         <input type="radio" onclick="initGame()" id="beginner" name="difficulty" value="4" checked>
         <label for="beginner">Beginner</label>
@@ -20,8 +24,6 @@
         <input type="radio" onclick="initGame()" id="expert" name="difficulty" value="12">
         <label for="expert">Expert</label>
     </div>
-
-    <div class="game-container"></div>
 
     <div class="game-over hidden">
         <h1>You <span></span></h1>

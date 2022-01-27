@@ -1,12 +1,11 @@
 'use strict'
 
 function renderBoard(mat, selector, classList = '', border = 0) {
-    var strHTML = `<table border="${border}"><tbody>`;
+    var strHTML = `<table border="${border}" oncontextmenu="return false;"><tbody>`;
     for (var i = 0; i < mat.length; i++) {
         strHTML += '<tr>';
         for (var j = 0; j < mat[i].length; j++) {
-            strHTML += `<td class="cell-${i}-${j} ${classList}" onclick="cellClicked(this, ${i}, ${j})"
-            oncontextmenu="cellRightClicked(this, ${i}, ${j}); return false" ></td>`;
+            strHTML += `<td class="cell-${i}-${j} ${classList}" onmouseup="cellClicked(event, this, ${i}, ${j})"></td>`;
         }
         strHTML += '</tr>'
     }
@@ -16,17 +15,14 @@ function renderBoard(mat, selector, classList = '', border = 0) {
 }
 
 function getRandomPos(mat) {
-    return {
-        i: getRandomInt(0, mat.length),
-        j: getRandomInt(0, mat[0].length)
-    };
+    return createPos(getRandomInt(0, mat.length), getRandomInt(0, mat[0].length));
 }
 
 function getBoardElementByPos(location) {
     return document.querySelector(`.cell-${location.i}-${location.j}`);
 }
 
-function getPos(i, j) {
+function createPos(i, j) {
     return {
         i: i,
         j: j

@@ -1,12 +1,31 @@
-.hidden-td {
-    background-color: gray;
+body {
+    text-align: center;
 }
 
-.hidden {
-    display: none;
+.game-container table{
+    margin-left: auto;
+    margin-right: auto;
+    user-select:none;
+    table-layout: fixed;
+    width: 30%;
+    background-color: grey;
+}
+
+td {
+    background-color: rgb(133, 153, 170);
+    font-weight: bold;
+}
+
+.hidden-td {
+    background-color: gray;
+    box-shadow: 0px 0px 5px 0px #000000;
+    cursor: pointer;
+}
+
+.hidden-td:active {
+    background-color: lightgray;
 }
 
 .game-container table td{
-    height: 50px;
-    width: 50px;
+    height: 35px;
 }

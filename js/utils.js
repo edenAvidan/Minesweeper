@@ -22,6 +22,10 @@ function getBoardElementByPos(location) {
     return document.querySelector(`.cell-${location.i}-${location.j}`);
 }
 
+function renderCell(elCell, value) {
+    elCell.innerHTML = value;
+}
+
 function createPos(i, j) {
     return {
         i: i,

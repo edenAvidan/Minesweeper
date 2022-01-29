@@ -1,7 +1,7 @@
 'use strict'
 
 function renderBoard(mat, selector, classList = '', border = 0) {
-    var strHTML = `<table border="${border}" oncontextmenu="return false;"><tbody>`;
+    var strHTML = `<table class="size${mat.length}" border="${border}" oncontextmenu="return false;"><tbody>`;
     for (var i = 0; i < mat.length; i++) {
         strHTML += '<tr>';
         for (var j = 0; j < mat[i].length; j++) {

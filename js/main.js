@@ -2,6 +2,7 @@
 
 const MINE = '💣';
 const MARK = '🚩'
+const LIFE = '❤'
 const EMPTY = ' ';
 const SMILEY_FACES = ['😀', '😨', '🤯', '😎'];
 
@@ -31,19 +32,19 @@ function initGame() {
         lives: NUM_OF_LIVES,
         shownCount: 0,
         markedCount: 0,
-        secsPassed: 0
+        secsPassed: -1
     };
 
+    updateLivesHtml();
     updateSmileyFace(0);
 
     // resets for new game
-    document.querySelector('.lives span').innerHTML = NUM_OF_LIVES;
     clearInterval(gTimerInterval); // in case new game starts before the old one ended
-    gElTime = document.querySelector('.timer span')
-    gElTime.innerHTML = 0;
+    gElTime = document.querySelector('.timer')
+    updateTimer();
 
     buildBoard();
-    renderBoard(gBoard, '.game-container', 'hidden-td');
+    renderBoard(gBoard, '.game-container', 'hidden-td', 1);
 }
 
 function buildBoard() {
@@ -154,11 +155,12 @@ function expandShown(cellRowidx, cellCollIdx) {
 
 function openMine(i, j, elMine) {
     renderCell(elMine, MINE);
-    elMine.style.backgroundColor = 'red';
+    elMine.style.backgroundColor = '#B33951';
     elMine.classList.remove('hidden-td');
     gBoard[i][j].isShown = true;
     gGame.shownCount++;
-    updateLives();
+    gGame.lives--;
+    updateLivesHtml();
 }
 
 function handleRightClick(elCell, cell) {
@@ -183,7 +185,6 @@ function gameOver() {
 
     gGame.isOn = false;
     clearInterval(gTimerInterval);
-    document.querySelector('.game-container table').disabled = 'disabled';
 }
 
 function revealMines() {
@@ -230,17 +231,21 @@ function updateSmileyFace(idx) {
     renderCell(elSmiley, SMILEY_FACES[idx]);
 }
 
-function updateLives() {
-    gGame.lives--;
-    var elLives = document.querySelector('.lives span');
-    renderCell(elLives, gGame.lives);
+function updateLivesHtml() {
+    var elLives = document.querySelector('.lives');
+    renderCell(elLives, LIFE.repeat(gGame.lives));
 
     return gGame.lives;
 }
 
 function updateTimer() {
     gGame.secsPassed++;
-    renderCell(gElTime, gGame.secsPassed);
+    var timeStr = `${Math.floor(gGame.secsPassed / 60)}:${padSeconds(gGame.secsPassed % 60)}`;
+    renderCell(gElTime, timeStr);
+}
+
+function padSeconds(seconds) {
+    return seconds < 10 ? `0${seconds}` : seconds
 }
 
 function getBoardSize() {

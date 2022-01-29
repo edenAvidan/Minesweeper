@@ -28,7 +28,7 @@ td {
 .size-btns {
     list-style-type: none;
     margin-top: 10px;
-    margin-left: 42%;
+    margin-left: 41%;
     padding: 0;
 }
 
@@ -96,6 +96,18 @@ td {
     display: inline-block;
     font-size: 35px;
     width:35px;
+    position: absolute;
+    margin-top: 415px;
+    color: #B33951;
+}
+
+.hints {
+    
+    font-size: 35px;
+    margin-top: 30px;
+    margin-left: 45%;
+    letter-spacing: 30px;
+    width:20px;
     color: #B33951;
 }
 

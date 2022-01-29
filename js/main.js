@@ -1,19 +1,22 @@
 'use strict'
 
 const MINE = '💣';
-const MARK = '🚩'
-const LIFE = '❤'
-const EMPTY = ' ';
+const MARK = '🚩';
+const LIFE = '❤';
+const HINT = '❓';
+const HINT_CLICKED = '❔';
 const SMILEY_FACES = ['😀', '😨', '🤯', '😎'];
+const EMPTY = ' ';
 
 const LEFT_CLICK = 0;
 const RIGHT_CLICK = 2;
 
-const NUM_OF_LIVES = 3;
+const NUM_OF_HINTS = 3;
 
 var gBoard;
 var gLevel;
 var gGame;
+var gNumOfLives;
 
 var gTimerInterval;
 var gElTime;
@@ -26,10 +29,13 @@ function initGame() {
         MINES: getNumOfMines(boardSize)
     };
 
+    gNumOfLives = getNumOfLives(boardSize);
     gGame = {
         isOn: false,
         isFirstClick: true,
-        lives: NUM_OF_LIVES,
+        isHintClicked: false,
+        currLives: gNumOfLives,
+        currHints: NUM_OF_HINTS,
         shownCount: 0,
         markedCount: 0,
         secsPassed: -1
@@ -37,6 +43,7 @@ function initGame() {
 
     updateLivesHtml();
     updateSmileyFace(0);
+    updateHints(document.querySelector('.hints'));
 
     // resets for new game
     clearInterval(gTimerInterval); // in case new game starts before the old one ended
@@ -112,6 +119,14 @@ function handleLeftClick(elCell, i, j) {
     var cell = gBoard[i][j];
     if (cell.isMarked) return;
 
+    if (gGame.isHintClicked) {
+        showHint(i, j);
+        gGame.currHints--;
+        gGame.isHintClicked = false;
+        updateHints(document.querySelector('.hints'));
+        return;
+    }
+
     if (!cell.isMine) {
         openCell(i, j, elCell);
         if (cell.minesAroundCount === 0) expandShown(i, j);
@@ -159,7 +174,7 @@ function openMine(i, j, elMine) {
     elMine.classList.remove('hidden-td');
     gBoard[i][j].isShown = true;
     gGame.shownCount++;
-    gGame.lives--;
+    gGame.currLives--;
     updateLivesHtml();
 }
 
@@ -170,15 +185,55 @@ function handleRightClick(elCell, cell) {
     renderCell(elCell, cell.isMarked ? MARK : EMPTY)
 }
 
+function showHint(cellI, cellJ) {
+    for (var i = cellI - 1; i <= cellI + 1; i++) {
+        if (i < 0 || i >= gLevel.SIZE) continue;
+
+        for (var j = cellJ - 1; j <= cellJ + 1; j++) {
+            if (j < 0 || j >= gLevel.SIZE) continue;
+            var cell = getBoardElementByPos(createPos(i, j));
+            if (cell.classList.contains('hidden-td')) {
+                cell.classList.remove('hidden-td');
+                if (gBoard[i][j].isMine) renderCell(cell, MINE);
+                else renderCell(cell, gBoard[i][j].minesAroundCount === 0 ? EMPTY : gBoard[i][j].minesAroundCount);
+                setTimeout(hideCell, 1000, cell);
+            }
+        }
+    }
+}
+
+function hideCell(elCell) {
+    elCell.classList.add('hidden-td');
+    if (elCell.classList.contains('marked')) renderCell(elCell, MARK);
+    else renderCell(elCell, EMPTY);
+}
+
+function hintClicked(elHints) {
+    if (gGame.isOn) {
+        gGame.isHintClicked = !gGame.isHintClicked;
+        updateHints(elHints);
+    }
+}
+
+function updateHints(elHints) {
+    var hintsStr = '';
+    if (!gGame.isHintClicked) {
+        hintsStr = HINT.repeat(gGame.currHints);
+
+    } else {
+        hintsStr = HINT.repeat(gGame.currHints - 1) + HINT_CLICKED;
+    }
+    renderCell(elHints, hintsStr);
+}
 
 function checkGameOver() {
-    var livesUsed = NUM_OF_LIVES - gGame.lives;
+    var livesUsed = gNumOfLives - gGame.currLives;
     var playerWinningCondition = gGame.shownCount + (gLevel.MINES - livesUsed) === gLevel.SIZE ** 2 && (gGame.markedCount + livesUsed) === gLevel.MINES;
-    return gGame.lives <= 0 || playerWinningCondition;
+    return gGame.currLives <= 0 || playerWinningCondition;
 }
 
 function gameOver() {
-    if (gGame.lives <= 0) {
+    if (gGame.currLives <= 0) {
         updateSmileyFace(2);
         revealMines();
     } else updateSmileyFace(3);
@@ -233,9 +288,8 @@ function updateSmileyFace(idx) {
 
 function updateLivesHtml() {
     var elLives = document.querySelector('.lives');
-    renderCell(elLives, LIFE.repeat(gGame.lives));
-
-    return gGame.lives;
+    if (gGame.currLives === 0) elLives.style.display = 'none';
+    renderCell(elLives, LIFE.repeat(gGame.currLives ? gGame.currLives : gGame.currLives + 1));
 }
 
 function updateTimer() {
@@ -255,6 +309,10 @@ function getBoardSize() {
             return parseInt(difficultyBtns[i].value);
         }
     }
+}
+
+function getNumOfLives(boardSize) {
+    return boardSize <= 4 ? 2 : 3;
 }
 
 function getNumOfMines(boardSize) {

@@ -38,3 +38,7 @@ function getRandomInt(min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
 }
+
+function padNumWithZero(num) {
+    return num < 10 ? `0${num}` : num
+}

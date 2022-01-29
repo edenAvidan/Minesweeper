@@ -53,7 +53,7 @@ td {
 }
 
 .size-btns input:checked+label,
-.Checked+label {
+.checked+label {
   background-color: #D18896;
 }
 
@@ -75,7 +75,7 @@ td {
 }
 
 .timer {
-    margin-left: 425px;
+    margin-left: 420px;
 }
 
 .smiley {
@@ -102,13 +102,16 @@ td {
 }
 
 .hints {
-    
     font-size: 35px;
     margin-top: 30px;
     margin-left: 45%;
     letter-spacing: 30px;
     width:20px;
     color: #B33951;
+}
+
+hr {
+    margin-top: 300px;
 }
 
 .game-container table td{

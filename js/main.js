@@ -219,7 +219,6 @@ function updateHints(elHints) {
     var hintsStr = '';
     if (!gGame.isHintClicked) {
         hintsStr = HINT.repeat(gGame.currHints);
-
     } else {
         hintsStr = HINT.repeat(gGame.currHints - 1) + HINT_CLICKED;
     }
@@ -288,18 +287,13 @@ function updateSmileyFace(idx) {
 
 function updateLivesHtml() {
     var elLives = document.querySelector('.lives');
-    if (gGame.currLives === 0) elLives.style.display = 'none';
-    renderCell(elLives, LIFE.repeat(gGame.currLives ? gGame.currLives : gGame.currLives + 1));
+    renderCell(elLives, LIFE.repeat(gGame.currLives));
 }
 
 function updateTimer() {
     gGame.secsPassed++;
-    var timeStr = `${Math.floor(gGame.secsPassed / 60)}:${padSeconds(gGame.secsPassed % 60)}`;
+    var timeStr = `${padNumWithZero(Math.floor(gGame.secsPassed / 60))}:${padNumWithZero(gGame.secsPassed % 60)}`;
     renderCell(gElTime, timeStr);
-}
-
-function padSeconds(seconds) {
-    return seconds < 10 ? `0${seconds}` : seconds
 }
 
 function getBoardSize() {
